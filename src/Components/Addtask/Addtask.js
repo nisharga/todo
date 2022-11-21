@@ -1,28 +1,56 @@
-import React from "react";
+import React, { useRef } from "react";
 import { useForm } from "react-hook-form";
 import Tasktitle from "../Shared/Tasktitle/Tasktitle";
+import NotificationSound from "./confirm-sound.mp3";
+import { toast } from "react-toastify";
 
-function Addtask() {
+function Addtask({ refetch }) {
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm();
+  const audioPlayer = useRef(null);
+  function playAudio() {
+    audioPlayer.current.play();
+  }
+
   const onSubmit = (data) => {
     const todotitle = data.todotitle;
     const tododescription = data.tododescription;
-    console.log(todotitle);
-    console.log(tododescription);
+
+    fetch("http://localhost:5000/addtodo", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        todotitle: todotitle,
+        tododescription: tododescription,
+        status: "create",
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("Success:", data);
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      });
+    toast("Todo Added Sucessfully");
+    playAudio();
+    refetch();
   };
 
-  //   console.log(watch("example"));
-  //
   return (
     <section className="card-body">
       <Tasktitle
         imgurl="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-todo-list/check1.webp"
         tasktitle="Add Task"
       />
+
+      {/* <button onClick={playAudio}>Play</button> */}
+      <audio ref={audioPlayer} src={NotificationSound} />
 
       <form onSubmit={handleSubmit(onSubmit)}>
         <input
